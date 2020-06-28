@@ -26,8 +26,18 @@ def read_urls(filename):
     extracting the hostname from the filename itself, sorting
     alphabetically in increasing order, and screening out duplicates.
     """
-    # +++your code here+++
-    pass
+    # define list for urls
+    urls = []
+    # getting all urls from file name
+    with open(filename) as file:
+        urls_with_all_extenstions = re.findall('(?<=GET.)\S*', file.read())
+    # finding only .jpg files
+    for url in urls_with_all_extenstions:
+        if ".jpg" in url:
+            urls.append(f"http://code.google.com{url}")
+    sorted_urls = sorted(urls)
+
+    return sorted_urls
 
 
 def download_images(img_urls, dest_dir):
@@ -38,8 +48,29 @@ def download_images(img_urls, dest_dir):
     to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
-    pass
+    # checking if dir already exist then creat dir
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+    # fetching each of image form img_ruls list
+    for i in range(len(img_urls)):
+        try:
+            print(f"downloading image number {i} please wait......")
+            urllib.request.urlretrieve(img_urls[i], f"{dest_dir}/img{i}.jpg")
+        except:
+            print(
+                "Can't downloads images please make sure you are connected to interetn and retry")
+    # writing  html file
+    with open('index.html', 'w') as html_file:
+        html_file.write('<html>')
+        html_file.write('<body>')
+        html_file.write('<table>')
+        for i in range(len(img_urls)):
+            if i % 2 == 0:
+                html_file.write(f'<img src="./images/img{i}.jpg">')
+        html_file.write('</tr>')
+        html_file.write('</table>')
+        html_file.write('</body>')
+        html_file.write('</html>')
 
 
 def create_parser():
@@ -61,9 +92,7 @@ def main(args):
         sys.exit(1)
 
     parsed_args = parser.parse_args(args)
-
     img_urls = read_urls(parsed_args.logfile)
-
     if parsed_args.todir:
         download_images(img_urls, parsed_args.todir)
     else:
