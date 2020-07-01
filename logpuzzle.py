@@ -21,6 +21,10 @@ import urllib.request
 import argparse
 
 
+def return_last_word(url):
+    return re.findall(r'-(....).jpg', url)
+
+
 def read_urls(filename):
     """Returns a list of the puzzle URLs from the given log file,
     extracting the hostname from the filename itself, sorting
@@ -28,15 +32,15 @@ def read_urls(filename):
     """
     # define list for urls
     urls = []
+    urls_with_all_extenstions = []
     # getting all urls from file name
     with open(filename) as file:
-        urls_with_all_extenstions = re.findall('(?<=GET.)\S*', file.read())
-    # finding only .jpg files
+        urls_with_all_extenstions = re.findall(r'(?<=GET.)\S*', file.read())
     for url in urls_with_all_extenstions:
-        if ".jpg" in url:
+        if ".jpg" and "/puzzle/" in url:
             urls.append(f"http://code.google.com{url}")
-    sorted_urls = sorted(urls)
 
+    sorted_urls = sorted(list(set(urls)), key=return_last_word)
     return sorted_urls
 
 
@@ -56,19 +60,18 @@ def download_images(img_urls, dest_dir):
         try:
             print(f"downloading image number {i} please wait......")
             urllib.request.urlretrieve(img_urls[i], f"{dest_dir}/img{i}.jpg")
-        except:
+        except Exception:
             print(
-                "Can't downloads images please make sure you are connected to interetn and retry")
+                "Can't downloads images please make sure you are connected"
+                "to internet and retry")
     # writing  html file
-    with open('index.html', 'w') as html_file:
+    with open(f'{dest_dir}/index.html', 'w') as html_file:
         html_file.write('<html>')
         html_file.write('<body>')
-        html_file.write('<table>')
+        html_file.write('<div>')
         for i in range(len(img_urls)):
-            if i % 2 == 0:
-                html_file.write(f'<img src="./images/img{i}.jpg">')
-        html_file.write('</tr>')
-        html_file.write('</table>')
+            html_file.write(f'<img src="img{i}.jpg">')
+        html_file.write('</div>')
         html_file.write('</body>')
         html_file.write('</html>')
 
